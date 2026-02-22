@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>登录测试</h1>
+    <form id="loginForm">
+        <div>
+            <label>用户名: <input type="text" id="username" value="testuser11"></label>
+        </div>
+        <div>
+            <label>密码: <input type="password" id="password" value="password11"></label>
+        </div>
+        <button type="button" onclick="testLogin()">测试登录</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        // 配置axios
+        axios.defaults.baseURL = '/api';
+        axios.defaults.timeout = 10000;
+
+        function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = '正在登录...';
+
+            axios.post('/user/login/', { username, password })
+                .then(response => {
+                    console.log('登录成功:', response);
+                    resultDiv.innerHTML = `
+                        <h2>登录成功！</h2>
+                        <p>用户ID: ${response.data.user_id}</p>
+                        <p>Token: ${response.data.token}</p>
+                    `;
+                })
+                .catch(error => {
+                    console.error('登录失败:', error);
+                    let errorMessage = '登录失败';
+                    if (error.response) {
+                        errorMessage = error.response.data.error || '登录失败';
+                    } else if (error.request) {
+                        errorMessage = '网络错误，请检查服务器连接';
+                    } else {
+                        errorMessage = '登录失败: ' + error.message;
+                    }
+                    resultDiv.innerHTML = `<h2>登录失败</h2><p>${errorMessage}</p>`;
+                });
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            console.log('页面加载完成，开始测试登录...');
+            testLogin();
+        };
+    </script>
+</body>
+</html>
