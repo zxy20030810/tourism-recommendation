@@ -56,7 +56,7 @@ export default {
         .then(response => {
           console.log('登录响应:', response)
           if (response.data.user_id) {
-            localStorage.setItem('user_id', response.data.user_id)
+            localStorage.setItem('userId', response.data.user_id)
             this.$message.success('登录成功')
             this.$router.push(`/recommendations/${response.data.user_id}`)
           }

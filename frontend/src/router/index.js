@@ -9,11 +9,18 @@ import SceneryIntroduction from '../components/SceneryIntroduction.vue'
 import TravelGuide from '../components/TravelGuide.vue'
 import WeatherQuery from '../components/WeatherQuery.vue'
 import GroupBuyDeals from '../components/GroupBuyDeals.vue'
+import DeepLearningShowcase from '../components/DeepLearningShowcase.vue'
+import HomePage from '../components/HomePage.vue'
 
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/recommendations'
+  },
+  {
+    path: '/home',
+    name: 'Home',
+    redirect: '/recommendations'
   },
   {
     path: '/login',
@@ -26,13 +33,13 @@ const routes = [
     component: UserRegister
   },
   {
-    path: '/preference/:userId',
+    path: '/preference/:userId?',
     name: 'Preference',
     component: PreferenceForm,
     props: true
   },
   {
-    path: '/recommendations/:userId',
+    path: '/recommendations/:userId?',
     name: 'Recommendations',
     component: RecommendationList,
     props: true
@@ -67,6 +74,11 @@ const routes = [
     path: '/groupbuy',
     name: 'GroupBuyDeals',
     component: GroupBuyDeals
+  },
+  {
+    path: '/deeplearning',
+    name: 'DeepLearningShowcase',
+    component: DeepLearningShowcase
   }
 ]
 

@@ -11,6 +11,10 @@
             :default-active="activeMenu"
             router
           >
+            <el-menu-item index="home" @click="goHome">
+              <el-icon><HomeFilled /></el-icon>
+              <span>主页</span>
+            </el-menu-item>
             <el-sub-menu index="features">
               <template #title>功能导航</template>
               <el-menu-item index="/food">
@@ -34,6 +38,10 @@
                 <span>团购优惠</span>
               </el-menu-item>
             </el-sub-menu>
+            <el-menu-item index="/deeplearning">
+              <el-icon><Cpu /></el-icon>
+              <span>深度学习</span>
+            </el-menu-item>
           </el-menu>
           <div class="header-nav">
             <el-button type="primary" @click="goToLogin">登录</el-button>
@@ -52,7 +60,7 @@
 </template>
 
 <script>
-import { Star, Cpu, Location, Food, Picture, Document, Cloudy, Ticket } from '@element-plus/icons-vue'
+import { Star, Cpu, Location, Food, Picture, Document, Cloudy, Ticket, HomeFilled } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -66,7 +74,8 @@ export default {
     Picture,
     Document,
     Cloudy,
-    Ticket
+    Ticket,
+    HomeFilled
   },
   setup() {
     const route = useRoute()
@@ -84,7 +93,12 @@ export default {
       this.$router.push('/register')
     },
     goHome() {
-      this.$router.push('/login')
+      const userId = localStorage.getItem('userId')
+      if (userId) {
+        this.$router.push(`/recommendations/${userId}`)
+      } else {
+        this.$router.push('/recommendations')
+      }
     }
   }
 }
