@@ -3,7 +3,38 @@
     <el-container>
       <el-header height="60px" class="app-header">
         <div class="header-content">
-          <h1 class="app-title">旅游目的地智能推荐系统</h1>
+          <h1 class="app-title" @click="goHome">旅游目的地智能推荐系统</h1>
+          <el-menu
+            mode="horizontal"
+            :ellipsis="false"
+            class="nav-menu"
+            :default-active="activeMenu"
+            router
+          >
+            <el-sub-menu index="features">
+              <template #title>功能导航</template>
+              <el-menu-item index="/food">
+                <el-icon><Food /></el-icon>
+                <span>美食推荐</span>
+              </el-menu-item>
+              <el-menu-item index="/scenery">
+                <el-icon><Picture /></el-icon>
+                <span>风景介绍</span>
+              </el-menu-item>
+              <el-menu-item index="/guide">
+                <el-icon><Document /></el-icon>
+                <span>旅游攻略</span>
+              </el-menu-item>
+              <el-menu-item index="/weather">
+                <el-icon><Cloudy /></el-icon>
+                <span>天气查询</span>
+              </el-menu-item>
+              <el-menu-item index="/groupbuy">
+                <el-icon><Ticket /></el-icon>
+                <span>团购优惠</span>
+              </el-menu-item>
+            </el-sub-menu>
+          </el-menu>
           <div class="header-nav">
             <el-button type="primary" @click="goToLogin">登录</el-button>
             <el-button @click="goToRegister">注册</el-button>
@@ -21,14 +52,29 @@
 </template>
 
 <script>
-import { Star, Cpu, Location } from '@element-plus/icons-vue'
+import { Star, Cpu, Location, Food, Picture, Document, Cloudy, Ticket } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
 export default {
   name: 'App',
   components: {
     Star,
     Cpu,
-    Location
+    Location,
+    Food,
+    Picture,
+    Document,
+    Cloudy,
+    Ticket
+  },
+  setup() {
+    const route = useRoute()
+    const activeMenu = computed(() => route.path)
+
+    return {
+      activeMenu
+    }
   },
   methods: {
     goToLogin() {
@@ -36,6 +82,9 @@ export default {
     },
     goToRegister() {
       this.$router.push('/register')
+    },
+    goHome() {
+      this.$router.push('/login')
     }
   }
 }
@@ -68,7 +117,7 @@ body {
   justify-content: space-between;
   align-items: center;
   height: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -76,6 +125,50 @@ body {
 .app-title {
   font-size: 20px;
   font-weight: bold;
+  cursor: pointer;
+}
+
+.nav-menu {
+  flex: 1;
+  justify-content: center;
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
+.nav-menu.el-menu--horizontal {
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
+.nav-menu.el-menu--horizontal > .el-sub-menu .el-sub-menu__title {
+  color: white !important;
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
+.nav-menu.el-menu--horizontal > .el-sub-menu.is-active .el-sub-menu__title {
+  border-bottom: none !important;
+}
+
+.nav-menu.el-menu--horizontal > .el-sub-menu .el-sub-menu__title:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.nav-menu .el-sub-menu__title .el-sub-menu__icon-arrow {
+  color: white !important;
+}
+
+.el-menu--popup {
+  min-width: 150px !important;
+}
+
+.el-menu--popup .el-menu-item {
+  color: #333 !important;
+}
+
+.el-menu--popup .el-menu-item:hover {
+  color: #409eff !important;
+  background-color: #f5f7fa !important;
 }
 
 .header-nav {

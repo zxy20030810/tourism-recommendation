@@ -56,26 +56,17 @@
       
       <!-- 景点图片 -->
       <div class="destination-images">
-        <!-- 简单的图片显示 -->
-        <div style="width: 100%; height: 100%; text-align: center;">
-          <!-- 故宫博物院图片 -->
-          <div v-if="destination.name === '故宫博物院'" style="width: 100%; height: 100%; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-            <span style="font-size: 24px; color: #666;">故宫博物院图片</span>
-          </div>
-          <!-- 长城图片 -->
-          <div v-else-if="destination.name === '长城'" style="width: 100%; height: 100%; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-            <span style="font-size: 24px; color: #666;">长城图片</span>
-          </div>
-          <!-- 西湖图片 -->
-          <div v-else-if="destination.name === '西湖'" style="width: 100%; height: 100%; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-            <span style="font-size: 24px; color: #666;">西湖图片</span>
-          </div>
-          <!-- 默认占位符 -->
-          <div v-else class="image-placeholder">
-            <el-icon class="image-icon"><Picture /></el-icon>
-            <span>{{ destination.name }} 图片</span>
-          </div>
+        <div v-if="imageLoading" class="image-loading">
+          <el-icon class="loading-icon"><Loading /></el-icon>
+          <span>正在加载图片...</span>
         </div>
+        <img 
+          v-else
+          :src="destinationImage" 
+          :alt="destination.name"
+          class="destination-image"
+          @error="handleImageError"
+        >
       </div>
       
       <div class="destination-info-header">
@@ -216,7 +207,9 @@ export default {
       loading: false,
       isFavorite: false,
       showShareDialog: false,
-      shareLink: ''
+      shareLink: '',
+      destinationImage: '',
+      imageLoading: false
     }
   },
   mounted() {
@@ -230,6 +223,8 @@ export default {
         const response = await axios.get(`/destination/detail/${this.destinationId}/`)
         console.log('目的地详情:', response.data)
         this.destination = response.data
+        // 获取图片
+        this.loadDestinationImage()
       } catch (error) {
         this.$message.error('获取目的地详情失败')
         console.error('Error fetching destination detail:', error)
@@ -237,31 +232,36 @@ export default {
         this.loading = false
       }
     },
+    
+    async loadDestinationImage() {
+      if (!this.destination) return
+      
+      this.imageLoading = true
+      try {
+        const response = await axios.get('/destination/images/', {
+          params: { keyword: this.destination.name }
+        })
+        
+        if (response.data.images && response.data.images.length > 0) {
+          this.destinationImage = response.data.images[0].url
+        } else {
+          this.destinationImage = `https://source.unsplash.com/1200x600/?${encodeURIComponent(this.destination.name)},travel`
+        }
+      } catch (error) {
+        console.error('获取图片失败:', error)
+        this.destinationImage = `https://source.unsplash.com/1200x600/?${encodeURIComponent(this.destination.name)},travel`
+      } finally {
+        this.imageLoading = false
+      }
+    },
+    
     goBack() {
       this.$router.back()
     },
     
-    // 根据景点名称返回对应的图片
-    getDestinationImages() {
-      console.log('当前景点名称:', this.destination.name)
-      const imagesMap = {
-        '长城': [
-          'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&h=450&fit=crop',
-          'https://images.unsplash.com/photo-1566470469467-f245cf556b56?w=800&h=450&fit=crop'
-        ],
-        '故宫博物院': [
-          'https://images.unsplash.com/photo-1584735980629-fae342037671?w=800&h=450&fit=crop',
-          'https://images.unsplash.com/photo-1596436231513-9c68df4e0a9d?w=800&h=450&fit=crop'
-        ],
-        '西湖': [
-          'https://images.unsplash.com/photo-1586375300773-8384e3e4916f?w=800&h=450&fit=crop',
-          'https://images.unsplash.com/photo-1596436231513-9c68df4e0a9d?w=800&h=450&fit=crop'
-        ]
-      }
-      
-      const images = imagesMap[this.destination.name] || []
-      console.log('返回的图片:', images)
-      return images
+    // 图片加载失败处理
+    handleImageError(e) {
+      e.target.src = 'https://source.unsplash.com/1200x600/?travel,landscape'
     },
     
     // 检查收藏状态
@@ -640,6 +640,26 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #f5f5f5;
+}
+
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.image-loading .loading-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  animation: rotate 1.5s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .destination-image {

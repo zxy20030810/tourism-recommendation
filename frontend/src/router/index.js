@@ -4,6 +4,11 @@ import UserRegister from '../components/UserRegister.vue'
 import PreferenceForm from '../components/PreferenceForm.vue'
 import RecommendationList from '../components/RecommendationList.vue'
 import DestinationDetail from '../components/DestinationDetail.vue'
+import FoodRecommendation from '../components/FoodRecommendation.vue'
+import SceneryIntroduction from '../components/SceneryIntroduction.vue'
+import TravelGuide from '../components/TravelGuide.vue'
+import WeatherQuery from '../components/WeatherQuery.vue'
+import GroupBuyDeals from '../components/GroupBuyDeals.vue'
 
 const routes = [
   {
@@ -37,6 +42,31 @@ const routes = [
     name: 'DestinationDetail',
     component: DestinationDetail,
     props: true
+  },
+  {
+    path: '/food',
+    name: 'FoodRecommendation',
+    component: FoodRecommendation
+  },
+  {
+    path: '/scenery',
+    name: 'SceneryIntroduction',
+    component: SceneryIntroduction
+  },
+  {
+    path: '/guide',
+    name: 'TravelGuide',
+    component: TravelGuide
+  },
+  {
+    path: '/weather',
+    name: 'WeatherQuery',
+    component: WeatherQuery
+  },
+  {
+    path: '/groupbuy',
+    name: 'GroupBuyDeals',
+    component: GroupBuyDeals
   }
 ]
 
