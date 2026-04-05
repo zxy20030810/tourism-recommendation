@@ -1,5 +1,5 @@
 <template>
-  <div class="scenery-container">
+  <div class="scenery-container" v-loading="loading">
     <div class="page-header">
       <h2>🏞️ 风景名胜介绍</h2>
       <p>探索祖国大好河山，感受自然之美</p>
@@ -58,119 +58,53 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 
 export default {
   name: 'SceneryIntroduction',
   setup() {
     const activeCategory = ref('')
+    const loading = ref(false)
 
-    const sceneryList = ref([
-      {
-        id: 1,
-        name: '张家界国家森林公园',
-        location: '湖南省张家界市',
-        category: '自然风光',
-        description: '以峰称奇、以谷显幽、以林见秀，三千奇峰拔地而起，八百溪流蜿蜒纵横，被誉为"扩大的盆景，缩小的仙境"。',
-        bestSeason: '春秋两季',
-        duration: '2-3天',
-        price: '225元/人',
-        rating: 4.9,
-        tags: ['世界遗产', '阿凡达取景地', '玻璃栈道'],
-        image: 'https://images.unsplash.com/photo-1513415756790-2ac1db1297d0?w=600'
-      },
-      {
-        id: 2,
-        name: '故宫博物院',
-        location: '北京市东城区',
-        category: '历史古迹',
-        description: '中国明清两代的皇家宫殿，世界上现存规模最大、保存最为完整的木质结构古建筑之一。',
-        bestSeason: '四季皆宜',
-        duration: '1天',
-        price: '60元/人',
-        rating: 4.8,
-        tags: ['世界遗产', '必游景点', '文化瑰宝'],
-        image: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=600'
-      },
-      {
-        id: 3,
-        name: '西湖风景区',
-        location: '浙江省杭州市',
-        category: '自然风光',
-        description: '以秀丽的湖光山色和众多的名胜古迹闻名中外，是中国著名的旅游胜地，被誉为"人间天堂"。',
-        bestSeason: '春季赏花，秋季赏月',
-        duration: '1-2天',
-        price: '免费',
-        rating: 4.7,
-        tags: ['世界遗产', '免费景区', '浪漫之地'],
-        image: 'https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=600'
-      },
-      {
-        id: 4,
-        name: '外滩',
-        location: '上海市黄浦区',
-        category: '现代都市',
-        description: '上海的标志性景观，汇集了52幢风格迥异的古典复兴大楼，素有"万国建筑博览群"之称。',
-        bestSeason: '四季皆宜',
-        duration: '半天',
-        price: '免费',
-        rating: 4.6,
-        tags: ['地标建筑', '夜景绝美', '免费景点'],
-        image: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?w=600'
-      },
-      {
-        id: 5,
-        name: '九寨沟',
-        location: '四川省阿坝州',
-        category: '自然风光',
-        description: '以翠海、叠瀑、彩林、雪峰、藏情、蓝冰"六绝"著称，被誉为"童话世界"、"人间仙境"。',
-        bestSeason: '秋季',
-        duration: '2天',
-        price: '169元/人',
-        rating: 4.9,
-        tags: ['世界遗产', '童话世界', '摄影天堂'],
-        image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600'
-      },
-      {
-        id: 6,
-        name: '兵马俑',
-        location: '陕西省西安市',
-        category: '历史古迹',
-        description: '秦始皇陵的陪葬坑，被誉为"世界第八大奇迹"，是中国古代辉煌文明的一张金字名片。',
-        bestSeason: '四季皆宜',
-        duration: '半天',
-        price: '120元/人',
-        rating: 4.8,
-        tags: ['世界遗产', '历史奇迹', '必游景点'],
-        image: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=600'
-      },
-      {
-        id: 7,
-        name: '丽江古城',
-        location: '云南省丽江市',
-        category: '民族风情',
-        description: '中国保存最为完好的四大古城之一，体现了中国古代城市建设的成就，是中国民居中具有鲜明特色和风格的类型之一。',
-        bestSeason: '四季皆宜',
-        duration: '2-3天',
-        price: '50元/人',
-        rating: 4.5,
-        tags: ['世界遗产', '古城韵味', '纳西文化'],
-        image: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=600'
-      },
-      {
-        id: 8,
-        name: '黄山',
-        location: '安徽省黄山市',
-        category: '自然风光',
-        description: '以奇松、怪石、云海、温泉、冬雪"五绝"著称于世，素有"天下第一奇山"之称。',
-        bestSeason: '四季皆宜',
-        duration: '2天',
-        price: '190元/人',
-        rating: 4.9,
-        tags: ['世界遗产', '五岳归来', '云海奇观'],
-        image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600'
+    const sceneryList = ref([])
+
+    const categoryMap = {
+      'natural': '自然风光',
+      'cultural': '历史古迹',
+      'leisure': '现代都市',
+      'ethnic': '民族风情'
+    }
+
+    const fetchDestinations = async () => {
+      loading.value = true
+      try {
+        const response = await axios.get('/destination/list/')
+        if (response.data && Array.isArray(response.data)) {
+          sceneryList.value = response.data.map((dest, index) => ({
+            id: dest.id,
+            name: dest.name,
+            location: `${dest.city}${dest.region ? '·' + dest.region : ''}`,
+            category: categoryMap[dest.category] || dest.category || '自然风光',
+            description: dest.description || '暂无描述',
+            bestSeason: dest.popular_season || '四季皆宜',
+            duration: '1-3天',
+            price: dest.price_level === 'low' ? '免费' : dest.price_level === 'medium' ? '50-200元/人' : '200元以上/人',
+            rating: parseFloat(dest.rating || (4.5 + Math.random() * 0.5).toFixed(1)),
+            tags: dest.tags || ['热门景点'],
+            image: dest.images && dest.images.length > 0 ? dest.images[0] : 'https://picsum.photos/600/400?random=' + index
+          }))
+        }
+      } catch (error) {
+        console.error('获取景点失败:', error)
+      } finally {
+        loading.value = false
       }
-    ])
+    }
+
+    onMounted(() => {
+      fetchDestinations()
+    })
 
     const filteredScenery = computed(() => {
       if (!activeCategory.value) {
@@ -199,6 +133,7 @@ export default {
 
     return {
       activeCategory,
+      loading,
       sceneryList,
       filteredScenery,
       filterScenery,
@@ -237,8 +172,26 @@ export default {
 
 .scenery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1400px) {
+  .scenery-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1000px) {
+  .scenery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .scenery-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .scenery-card {
@@ -254,7 +207,7 @@ export default {
 
 .scenery-image {
   position: relative;
-  height: 250px;
+  height: 180px;
   overflow: hidden;
 }
 
@@ -275,22 +228,22 @@ export default {
   left: 0;
   right: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  padding: 20px;
+  padding: 15px;
   color: white;
 }
 
 .scenery-overlay h3 {
-  font-size: 20px;
-  margin-bottom: 5px;
+  font-size: 16px;
+  margin-bottom: 3px;
 }
 
 .scenery-location {
-  font-size: 14px;
+  font-size: 12px;
   opacity: 0.9;
 }
 
 .scenery-content {
-  padding: 20px;
+  padding: 15px;
 }
 
 .scenery-meta {
@@ -302,23 +255,27 @@ export default {
 
 .scenery-desc {
   color: #666;
-  line-height: 1.8;
-  margin-bottom: 15px;
-  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  font-size: 13px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .scenery-features {
   background: #f5f7fa;
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .feature-item {
   display: flex;
   justify-content: space-between;
-  padding: 5px 0;
-  font-size: 14px;
+  padding: 3px 0;
+  font-size: 13px;
 }
 
 .feature-label {

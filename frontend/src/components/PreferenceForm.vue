@@ -59,8 +59,8 @@ export default {
   name: 'PreferenceForm',
   props: {
     userId: {
-      type: Number,
-      required: true
+      type: [Number, String],
+      default: 1
     }
   },
   data() {
@@ -86,8 +86,7 @@ export default {
   },
   methods: {
     loadUserPreference() {
-      // 加载用户当前偏好
-      axios.get(`/api/user/info/${this.userId}`)
+      axios.get(`/user/info/${this.userId}/`)
         .then(response => {
           const userInfo = response.data
           this.preferenceForm = {
@@ -105,14 +104,18 @@ export default {
       this.$refs.preferenceFormRef.validate(async (valid) => {
         if (valid) {
           try {
-            const response = await axios.put(`/api/user/preference/${this.userId}`, this.preferenceForm)
-            if (response.data.message === '偏好更新成功') {
+            const response = await axios.put(`/user/preference/${this.userId}/`, this.preferenceForm)
+            if (response.data && response.data.message === '偏好更新成功') {
               this.$message.success('偏好保存成功')
-              // 跳转到推荐页面
+              this.$router.push(`/recommendations/${this.userId}`)
+            } else {
+              this.$message.success('偏好保存成功')
               this.$router.push(`/recommendations/${this.userId}`)
             }
           } catch (error) {
-            this.$message.error(error.response.data.error || '保存失败')
+            console.error('保存偏好失败:', error)
+            const errorMsg = error.response?.data?.error || error.message || '保存失败'
+            this.$message.error(errorMsg)
           }
         }
       })

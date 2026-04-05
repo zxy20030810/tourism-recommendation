@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Destination
+from .models import Destination, TravelGuide
 import json
 import requests
 import re
@@ -298,3 +298,70 @@ def search_destinations(request):
             'price_level': dest.price_level
         })
     return Response(result)
+
+
+@api_view(['GET'])
+def get_travel_guides(request):
+    """获取旅游攻略列表"""
+    category = request.query_params.get('category', '')
+    keyword = request.query_params.get('keyword', '')
+    
+    queryset = TravelGuide.objects.all()
+    if category:
+        queryset = queryset.filter(category=category)
+    if keyword:
+        queryset = queryset.filter(title__icontains=keyword) | queryset.filter(summary__icontains=keyword)
+    
+    result = []
+    for guide in queryset:
+        result.append({
+            'id': guide.id,
+            'title': guide.title,
+            'category': guide.category,
+            'author': guide.author,
+            'summary': guide.summary,
+            'content': guide.content,
+            'views': guide.views,
+            'likes': guide.likes,
+            'tags': guide.tags,
+            'date': guide.created_at.strftime('%Y-%m-%d')
+        })
+    return Response(result)
+
+
+@api_view(['GET'])
+def get_travel_guide_detail(request, guide_id):
+    """获取旅游攻略详情"""
+    try:
+        guide = TravelGuide.objects.get(id=guide_id)
+        
+        # 增加浏览量
+        guide.views += 1
+        guide.save(update_fields=['views'])
+        
+        return Response({
+            'id': guide.id,
+            'title': guide.title,
+            'category': guide.category,
+            'author': guide.author,
+            'summary': guide.summary,
+            'content': guide.content,
+            'views': guide.views,
+            'likes': guide.likes,
+            'tags': guide.tags,
+            'date': guide.created_at.strftime('%Y-%m-%d')
+        })
+    except TravelGuide.DoesNotExist:
+        return Response({'error': '攻略不存在'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def like_travel_guide(request, guide_id):
+    """点赞旅游攻略"""
+    try:
+        guide = TravelGuide.objects.get(id=guide_id)
+        guide.likes += 1
+        guide.save(update_fields=['likes'])
+        return Response({'success': True, 'likes': guide.likes})
+    except TravelGuide.DoesNotExist:
+        return Response({'error': '攻略不存在'}, status=status.HTTP_404_NOT_FOUND)

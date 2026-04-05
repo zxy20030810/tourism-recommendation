@@ -46,6 +46,10 @@
           <div class="header-nav">
             <el-button type="primary" @click="goToLogin">登录</el-button>
             <el-button @click="goToRegister">注册</el-button>
+            <el-button @click="goToProfile">
+              <el-icon><User /></el-icon>
+              个人中心
+            </el-button>
           </div>
         </div>
       </el-header>
@@ -60,7 +64,7 @@
 </template>
 
 <script>
-import { Star, Cpu, Location, Food, Picture, Document, Cloudy, Ticket, HomeFilled } from '@element-plus/icons-vue'
+import { Star, Cpu, Location, Food, Picture, Document, Cloudy, Ticket, HomeFilled, User } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -75,7 +79,8 @@ export default {
     Document,
     Cloudy,
     Ticket,
-    HomeFilled
+    HomeFilled,
+    User
   },
   setup() {
     const route = useRoute()
@@ -99,6 +104,10 @@ export default {
       } else {
         this.$router.push('/recommendations')
       }
+    },
+    goToProfile() {
+      const userId = localStorage.getItem('userId') || 1
+      this.$router.push(`/profile/${userId}`)
     }
   }
 }

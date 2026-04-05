@@ -11,6 +11,8 @@ import WeatherQuery from '../components/WeatherQuery.vue'
 import GroupBuyDeals from '../components/GroupBuyDeals.vue'
 import DeepLearningShowcase from '../components/DeepLearningShowcase.vue'
 import HomePage from '../components/HomePage.vue'
+import UserCollection from '../components/UserCollection.vue'
+import UserProfile from '../components/UserProfile.vue'
 
 const routes = [
   {
@@ -79,6 +81,17 @@ const routes = [
     path: '/deeplearning',
     name: 'DeepLearningShowcase',
     component: DeepLearningShowcase
+  },
+  {
+    path: '/collection',
+    name: 'UserCollection',
+    component: UserCollection
+  },
+  {
+    path: '/profile/:userId?',
+    name: 'UserProfile',
+    component: UserProfile,
+    props: true
   }
 ]
 

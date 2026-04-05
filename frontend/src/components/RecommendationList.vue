@@ -224,7 +224,7 @@
               <span>偏好分析</span>
             </div>
             <div class="insight-body">
-              <p>根据您的浏览历史，您更偏好<span class="highlight">自然风光</span>类目的地</p>
+              <p>根据您的浏览历史，您更偏爱<span class="highlight">自然风光</span>类目的地</p>
             </div>
           </div>
         </el-col>
@@ -243,10 +243,10 @@
           <div class="insight-card">
             <div class="insight-header">
               <el-icon><Calendar /></el-icon>
-              <span>最佳时机</span>
+              <span>最佳时节</span>
             </div>
             <div class="insight-body">
-              <p>当前季节最适合前往<span class="highlight">黄山、九寨沟</span>等自然景区</p>
+              <p>当前季节最适合前往<span class="highlight">黄山、九寨沟</span>等自然景点</p>
             </div>
           </div>
         </el-col>
@@ -284,13 +284,13 @@ export default {
       responseTime: 0,
       sortBy: 'score',
       userLat: 34.3416,
-      userLon: 108.9398
+      userLon: 108.9398,
+      favorites: JSON.parse(localStorage.getItem('favorites') || '[]')
     }
   },
   computed: {
     favoriteCount() {
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-      return favorites.length
+      return this.favorites.length
     },
     sortedRecommendations() {
       let sorted = [...this.recommendations]
@@ -339,23 +339,235 @@ export default {
       }, 200)
       
       try {
-        let url = '/recommendation/user/' + (this.userId || 'guest') + '/'
-        const response = await axios.get(url, {
-          params: {
-            lat: this.userLat,
-            lon: this.userLon
+        let recommendations = []
+        
+        let userPreference = null
+        try {
+          const prefResponse = await axios.get(`/user/preference/${this.userId}/`)
+          if (prefResponse.data) {
+            userPreference = prefResponse.data
           }
-        })
-        this.recommendations = response.data.map((item, index) => ({
-          ...item,
-          score: item.score || (0.95 - index * 0.05 + Math.random() * 0.03),
-          rating: parseFloat(item.rating || (4.9 - index * 0.1 + Math.random() * 0.2).toFixed(1)),
-          distance: item.distance !== null && item.distance !== undefined ? item.distance : Math.floor(Math.random() * 200 + 10)
-        }))
+        } catch (prefError) {
+          console.log('获取用户偏好失败:', prefError)
+        }
+        
+        const favoriteRegions = userPreference?.favorite_regions || []
+        const travelType = userPreference?.travel_type || ''
+        const budgetLevel = userPreference?.budget_level || ''
+        
+        const cityCoords = {
+          '重庆': { lat: 29.5630, lon: 106.5770 },
+          '北京': { lat: 39.9042, lon: 116.4074 },
+          '上海': { lat: 31.2304, lon: 121.4737 },
+          '天津': { lat: 39.3434, lon: 117.3616 },
+          '广州': { lat: 23.1291, lon: 113.2644 },
+          '深圳': { lat: 22.5431, lon: 114.0579 },
+          '成都': { lat: 30.5728, lon: 104.0668 },
+          '杭州': { lat: 30.2741, lon: 120.1551 },
+          '西安': { lat: 34.3416, lon: 108.9398 },
+          '武汉': { lat: 30.5928, lon: 114.3055 },
+          '南京': { lat: 32.0603, lon: 118.7969 },
+          '苏州': { lat: 31.2989, lon: 120.5853 },
+          '长沙': { lat: 28.2282, lon: 112.9388 },
+          '郑州': { lat: 34.7466, lon: 113.6254 },
+          '青岛': { lat: 36.0671, lon: 120.3826 },
+          '大连': { lat: 38.9140, lon: 121.6147 },
+          '厦门': { lat: 24.4798, lon: 118.0894 },
+          '三亚': { lat: 18.2528, lon: 109.5120 },
+          '丽江': { lat: 26.8721, lon: 100.2320 },
+          '大理': { lat: 25.6065, lon: 100.1660 },
+          '桂林': { lat: 25.2744, lon: 110.2990 },
+          '黄山': { lat: 29.7090, lon: 118.3220 },
+          '拉萨': { lat: 29.6500, lon: 91.1200 },
+          '乌鲁木齐': { lat: 43.8256, lon: 87.6168 },
+          '哈尔滨': { lat: 45.8038, lon: 126.5350 },
+          '沈阳': { lat: 41.8057, lon: 123.4315 },
+          '承德': { lat: 40.9510, lon: 117.9639 },
+          '秦皇岛': { lat: 39.9350, lon: 119.6000 },
+          '晋中': { lat: 37.6850, lon: 112.7510 },
+          '大同': { lat: 40.0760, lon: 113.3000 },
+          '忻州': { lat: 38.4030, lon: 112.7380 },
+          '呼伦贝尔': { lat: 49.2120, lon: 119.7600 },
+          '鄂尔多斯': { lat: 39.5820, lon: 109.7880 },
+          '嘉兴': { lat: 30.7610, lon: 120.7500 },
+          '舟山': { lat: 29.9860, lon: 122.3060 },
+          '扬州': { lat: 32.3930, lon: 119.4200 },
+          '无锡': { lat: 31.4910, lon: 120.3150 },
+          '南平': { lat: 26.6370, lon: 118.1780 },
+          '漳州': { lat: 24.5090, lon: 117.6540 },
+          '九江': { lat: 29.7050, lon: 115.9930 },
+          '南昌': { lat: 28.6820, lon: 115.8580 },
+          '上饶': { lat: 28.4440, lon: 117.9660 },
+          '泰安': { lat: 36.1880, lon: 117.1210 },
+          '济南': { lat: 36.6510, lon: 117.1200 },
+          '烟台': { lat: 37.4630, lon: 121.4480 },
+          '池州': { lat: 30.6560, lon: 117.4870 },
+          '洛阳': { lat: 34.6200, lon: 112.4540 },
+          '焦作': { lat: 35.2380, lon: 113.2410 },
+          '宜昌': { lat: 30.6920, lon: 111.2860 },
+          '张家界': { lat: 29.1250, lon: 110.4800 },
+          '湘西土家族苗族自治州': { lat: 28.3140, lon: 109.7410 },
+          '神农架林区': { lat: 31.4690, lon: 110.1670 },
+          '韶关': { lat: 24.8100, lon: 113.5970 },
+          '北海': { lat: 21.4730, lon: 109.1170 },
+          '崇左': { lat: 22.3800, lon: 107.3600 },
+          '乐山': { lat: 29.5690, lon: 103.7670 },
+          '阿坝藏族羌族自治州': { lat: 31.9000, lon: 102.2200 },
+          '甘孜藏族自治州': { lat: 30.0380, lon: 101.9620 },
+          '迪庆藏族自治州': { lat: 27.8190, lon: 99.7060 },
+          '黔东南苗族侗族自治州': { lat: 26.5790, lon: 107.9780 },
+          '安顺': { lat: 26.2450, lon: 105.9330 },
+          '渭南': { lat: 34.5000, lon: 109.5200 },
+          '敦煌': { lat: 40.1420, lon: 94.6620 },
+          '日喀则': { lat: 29.2680, lon: 88.8890 },
+          '海南藏族自治州': { lat: 36.2800, lon: 100.6170 },
+          '海西蒙古族藏族自治州': { lat: 37.3750, lon: 97.3700 },
+          '阿勒泰': { lat: 47.8450, lon: 88.1370 },
+          '长白山保护开发区': { lat: 41.3200, lon: 128.2000 },
+          '吉林市': { lat: 43.8380, lon: 126.5500 },
+          '牡丹江': { lat: 44.5770, lon: 129.6180 }
+        }
+
+        let targetCity = null
+        let targetCoords = null
+        
+        if (favoriteRegions.length > 0) {
+          for (const region of favoriteRegions) {
+            if (cityCoords[region]) {
+              targetCity = region
+              targetCoords = cityCoords[region]
+              break
+            }
+            for (const [cityName, coords] of Object.entries(cityCoords)) {
+              if (cityName.includes(region) || region.includes(cityName)) {
+                targetCity = cityName
+                targetCoords = coords
+                break
+              }
+            }
+            if (targetCoords) break
+          }
+        }
+        
+        try {
+          const destResponse = await axios.get('/destination/list/')
+          let destData = destResponse.data
+          if (destData && destData.value && Array.isArray(destData.value)) {
+            destData = destData.value
+          }
+          if (destData && destData.length > 0) {
+            recommendations = destData.map((item, index) => ({
+              destination_id: item.id || (index + 1),
+              destination_name: item.name || '',
+              city: item.city || '',
+              region: item.region || '',
+              category: item.category || '',
+              rating: parseFloat(item.rating || (4.9 - index * 0.1).toFixed(1)),
+              description: item.description || '',
+              price_level: item.price_level || 'medium',
+              tags: item.tags || [],
+              lat: item.coordinates?.lat || null,
+              lon: item.coordinates?.lon || null,
+              distance: item.coordinates?.lat && item.coordinates?.lon ? 
+                this.calculateDistance(this.userLat, this.userLon, item.coordinates.lat, item.coordinates.lon) : 
+                Math.floor(Math.random() * 2000 + 1000),
+              score: 0.5 + Math.random() * 0.1,
+              _cityMatch: false,
+              _categoryMatch: false,
+              _priceMatch: false,
+              _cityDistance: Infinity,
+              _sameProvince: false
+            }))
+            
+            recommendations.forEach(rec => {
+              rec._cityMatch = favoriteRegions.length > 0 && favoriteRegions.some(region => 
+                rec.city === region || rec.region === region
+              )
+              
+              const categoryMap = { 'cultural': 'cultural', 'natural': 'natural', 'leisure': 'leisure', 'adventure': 'natural' }
+              rec._categoryMatch = travelType && categoryMap[travelType] === rec.category
+              
+              rec._priceMatch = budgetLevel && budgetLevel === rec.price_level
+
+              if (targetCoords && rec.lat && rec.lon) {
+                rec._cityDistance = this.calculateDistance(targetCoords.lat, targetCoords.lon, rec.lat, rec.lon)
+                
+                if (rec.city === targetCity) {
+                  rec._cityDistance = 0
+                  rec._cityMatch = true
+                }
+                
+                if (!rec._cityMatch && rec.region && targetCity) {
+                  const targetRegion = Object.keys(cityCoords).find(c => c === targetCity)
+                  const cityInDB = this._getCityRegion(rec.city, cityCoords)
+                  if (cityInDB && cityInDB === this._getCityRegion(targetCity, cityCoords)) {
+                    rec._sameProvince = true
+                  }
+                }
+              }
+              
+              let baseScore = 0.50 + Math.random() * 0.08
+              if (rec._cityDistance === 0) baseScore += 0.42
+              else if (rec._cityDistance <= 300) baseScore += 0.30
+              else if (rec._cityDistance <= 800) baseScore += 0.20
+              else if (rec._sameProvince) baseScore += 0.12
+              else if (rec._cityDistance <= 1500) baseScore += 0.05
+              
+              if (rec._categoryMatch) baseScore += 0.06
+              if (rec._priceMatch) baseScore += 0.04
+              
+              rec.score = Math.min(baseScore, 0.99)
+            })
+            
+            recommendations.sort((a, b) => b.score - a.score)
+            
+            const topN = Math.min(10, recommendations.length)
+            
+            const cityMatches = recommendations.filter(r => r._cityDistance === 0)
+            const otherRecs = recommendations.filter(r => r._cityDistance !== 0)
+            
+            cityMatches.forEach((rec, idx) => {
+              rec.score = parseFloat((0.98 - idx * 0.015 + Math.random() * 0.005).toFixed(3))
+            })
+            otherRecs.slice(0, topN - cityMatches.length).forEach((rec, idx) => {
+              rec.score = parseFloat((0.92 - idx * 0.03 + Math.random() * 0.008).toFixed(3))
+            })
+            
+            recommendations = [...cityMatches, ...otherRecs].slice(0, topN)
+          }
+        } catch (destError) {
+          console.log('无法从数据库获取景点数据:', destError)
+        }
+        
+        // 如果数据库没有数据，则调用推荐API
+        if (recommendations.length === 0) {
+          let url = '/recommendation/user/' + (this.userId || 'guest') + '/'
+          const response = await axios.get(url, {
+            params: {
+              lat: this.userLat,
+              lon: this.userLon
+            }
+          })
+          if (response.data && response.data.length > 0) {
+            recommendations = response.data.map((item, index) => ({
+              ...item,
+              score: item.score || (0.95 - index * 0.05 + Math.random() * 0.03),
+              rating: parseFloat(item.rating || (4.9 - index * 0.1 + Math.random() * 0.2).toFixed(1)),
+              distance: item.distance !== null && item.distance !== undefined ? item.distance : Math.floor(Math.random() * 200 + 10)
+            }))
+          }
+        }
+        
+        // 如果都没有数据，显示提示信息
+        if (recommendations.length === 0) {
+          this.$message.info('暂无推荐数据')
+        } else {
+          this.recommendations = recommendations
+        }
         this.loadingProgress = 100
       } catch (error) {
-        this.$message.error('获取推荐失败')
         console.error('Error fetching recommendations:', error)
+        this.$message.info('获取推荐数据失败，请稍后重试')
       } finally {
         clearInterval(progressInterval)
         this.responseTime = Date.now() - startTime
@@ -376,12 +588,12 @@ export default {
     },
     toggleFavorite(destinationId) {
       let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-      if (favorites.includes(destinationId)) {
-        favorites = favorites.filter(id => id !== destinationId)
-        this.$message.success('已取消收藏')
-      } else {
+      if (!favorites.includes(destinationId)) {
         favorites.push(destinationId)
         this.$message.success('收藏成功')
+      } else {
+        favorites = favorites.filter(id => id !== destinationId)
+        this.$message.success('收藏取消成功')
       }
       localStorage.setItem('favorites', JSON.stringify(favorites))
     },
@@ -423,6 +635,42 @@ export default {
         return distance.toFixed(0) + 'km'
       }
       return distance.toFixed(1) + 'km'
+    },
+    // 计算两个经纬度之间的距离（Haversine公式）
+    _getCityRegion(cityName, cityCoords) {
+      const regionMap = {
+        '华北': ['北京', '天津', '承德', '秦皇岛', '晋中', '大同', '忻州', '呼伦贝尔', '鄂尔多斯'],
+        '东北': ['沈阳', '大连', '长白山保护开发区', '吉林市', '哈尔滨', '牡丹江'],
+        '华东': ['上海', '南京', '苏州', '扬州', '无锡', '嘉兴', '杭州', '舟山', '黄山', '池州',
+                 '九江', '南昌', '上饶', '泰安', '济南', '青岛', '烟台', '厦门', '南平', '漳州'],
+        '华中': ['武汉', '长沙', '郑州', '洛阳', '焦作', '宜昌', '张家界', '湘西土家族苗族自治州', '神农架林区'],
+        '华南': ['广州', '深圳', '韶关', '桂林', '北海', '崇左', '三亚'],
+        '西南': ['重庆', '成都', '乐山', '阿坝藏族羌族自治州', '甘孜藏族自治州', '贵阳', '安顺',
+                 '黔东南苗族侗族自治州', '昆明', '丽江', '大理', '迪庆藏族自治州', '拉萨', '日喀则'],
+        '西北': ['西安', '渭南', '敦煌', '乌鲁木齐', '阿勒泰', '海南藏族自治州', '海西蒙古族藏族自治州']
+      }
+      for (const [region, cities] of Object.entries(regionMap)) {
+        if (cities.some(c => cityName.includes(c) || c.includes(cityName))) return region
+      }
+      return null
+    },
+    calculateDistance(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lon1 || !lat2 || !lon2) {
+        return Math.floor(Math.random() * 2000 + 1000)
+      }
+      const R = 6371 // 地球半径（公里）
+      const dLat = this.toRad(lat2 - lat1)
+      const dLon = this.toRad(lon2 - lon1)
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      const distance = R * c
+      return Math.round(distance)
+    },
+    // 将角度转换为弧度
+    toRad(deg) {
+      return deg * (Math.PI / 180)
     }
   }
 }
@@ -902,12 +1150,12 @@ export default {
 }
 
 .favorite-btn:hover {
-  color: #f56c6c;
+  color: #409EFF;
   transform: scale(1.2);
 }
 
 .favorite-btn .is-favorite {
-  color: #f56c6c;
+  color: #409EFF;
 }
 
 .card-meta {

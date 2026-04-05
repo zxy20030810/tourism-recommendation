@@ -26,7 +26,7 @@
       </el-tabs>
     </div>
 
-    <div class="guide-list">
+    <div class="guide-list" v-loading="loading">
       <el-card v-for="guide in filteredGuides" :key="guide.id" class="guide-card" shadow="hover">
         <div class="guide-header">
           <div class="guide-category">
@@ -50,7 +50,7 @@
               <el-icon><Star /></el-icon>
               {{ guide.likes }}
             </el-button>
-            <el-button size="small" @click="collectGuide(guide)">
+            <el-button :type="collectedGuides.has(guide.id) ? 'primary' : 'info'" size="small" @click="collectGuide(guide)">
               <el-icon><CollectionTag /></el-icon>
               收藏
             </el-button>
@@ -66,9 +66,10 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Star, CollectionTag } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import axios from 'axios'
 
 export default {
   name: 'TravelGuide',
@@ -79,112 +80,34 @@ export default {
   setup() {
     const searchKeyword = ref('')
     const activeTab = ref('')
+    
+    const guides = ref([])
+    const loading = ref(false)
 
-    const guides = ref([
-      {
-        id: 1,
-        title: '第一次去北京必看！故宫游览全攻略',
-        category: '行程规划',
-        author: '旅游达人小王',
-        date: '2026-03-15',
-        views: 12580,
-        likes: 892,
-        summary: '详细介绍故宫游览路线、门票预约、最佳游览时间等信息，让你轻松玩转故宫！',
-        content: `<h4>🎫 门票预约</h4>
-          <p>故宫实行实名制预约购票，建议提前10天在官网预约。旺季门票60元，淡季40元。</p>
-          <h4>⏰ 开放时间</h4>
-          <p>旺季（4月1日-10月31日）8:30-17:00</p>
-          <p>淡季（11月1日-3月31日）8:30-16:30</p>
-          <h4>🚶 推荐路线</h4>
-          <p>午门→太和殿→中和殿→保和殿→乾清宫→交泰殿→坤宁宫→御花园→神武门</p>`,
-        tags: ['北京', '故宫', '必看攻略']
-      },
-      {
-        id: 2,
-        title: '旅行必备物品清单，再也不怕忘带东西',
-        category: '出行准备',
-        author: '背包客小李',
-        date: '2026-03-10',
-        views: 8920,
-        likes: 654,
-        summary: '超详细的旅行物品清单，涵盖证件、衣物、电子设备、药品等各个方面，打印出来对照打包！',
-        content: `<h4>📋 证件类</h4>
-          <p>身份证、护照、驾照、学生证、银行卡、现金</p>
-          <h4>👕 衣物类</h4>
-          <p>根据目的地天气准备，建议带一件外套、舒适的运动鞋</p>
-          <h4>📱 电子设备</h4>
-          <p>手机、充电宝、充电器、相机、转换插头</p>`,
-        tags: ['出行准备', '必备清单', '实用攻略']
-      },
-      {
-        id: 3,
-        title: '学生党穷游攻略：如何用最少的钱玩最多的地方',
-        category: '省钱攻略',
-        author: '省钱小能手',
-        date: '2026-03-08',
-        views: 15680,
-        likes: 1234,
-        summary: '分享学生党穷游经验，包括交通、住宿、门票等方面的省钱技巧，让你的旅行预算减半！',
-        content: `<h4>🚄 交通省钱</h4>
-          <p>学生证购买火车票可享优惠，提前购票更便宜</p>
-          <h4>🏨 住宿省钱</h4>
-          <p>选择青旅或民宿，多人分摊更划算</p>
-          <h4>🎫 门票省钱</h4>
-          <p>学生证半价，关注景区优惠活动</p>`,
-        tags: ['省钱攻略', '学生党', '穷游']
-      },
-      {
-        id: 4,
-        title: '高原旅行注意事项，预防高反必看',
-        category: '注意事项',
-        author: '户外达人老张',
-        date: '2026-03-05',
-        views: 9870,
-        likes: 756,
-        summary: '前往西藏、青海等高原地区旅行，需要注意哪些事项？如何预防和应对高原反应？',
-        content: `<h4>⚠️ 高原反应预防</h4>
-          <p>提前一周服用红景天，到达后不要剧烈运动</p>
-          <h4>🧳 必备物品</h4>
-          <p>防晒霜、墨镜、帽子、保温杯、氧气瓶</p>
-          <h4>🚫 禁忌事项</h4>
-          <p>不要饮酒、不要暴饮暴食、不要剧烈运动</p>`,
-        tags: ['高原旅行', '注意事项', '安全攻略']
-      },
-      {
-        id: 5,
-        title: '成都3天2夜完美行程规划',
-        category: '行程规划',
-        author: '成都本地人',
-        date: '2026-03-01',
-        views: 11230,
-        likes: 876,
-        summary: '本地人推荐的成都经典路线，涵盖大熊猫基地、宽窄巷子、锦里、春熙路等热门景点！',
-        content: `<h4>Day 1</h4>
-          <p>上午：大熊猫基地 → 下午：宽窄巷子 → 晚上：锦里古街</p>
-          <h4>Day 2</h4>
-          <p>上午：杜甫草堂 → 下午：武侯祠 → 晚上：春熙路</p>
-          <h4>Day 3</h4>
-          <p>上午：人民公园喝茶 → 下午：太古里 → 晚上：火锅</p>`,
-        tags: ['成都', '行程规划', '3天2夜']
-      },
-      {
-        id: 6,
-        title: '自驾游必备：车辆检查与安全驾驶指南',
-        category: '出行准备',
-        author: '老司机阿强',
-        date: '2026-02-28',
-        views: 7650,
-        likes: 543,
-        summary: '自驾游出发前，这些车辆检查项目一定要做！还有安全驾驶技巧分享。',
-        content: `<h4>🔧 车辆检查项目</h4>
-          <p>轮胎、刹车、机油、防冻液、电瓶、灯光</p>
-          <h4>🚗 随车工具</h4>
-          <p>备胎、千斤顶、三角警示牌、灭火器、急救包</p>
-          <h4>⚠️ 安全驾驶</h4>
-          <p>遵守交规、不疲劳驾驶、保持车距</p>`,
-        tags: ['自驾游', '安全驾驶', '出行准备']
+    // 从API获取攻略数据
+    const fetchGuides = async () => {
+      loading.value = true
+      try {
+        const response = await axios.get('/destination/guides/', {
+          params: {
+            category: activeTab.value,
+            keyword: searchKeyword.value
+          }
+        })
+        if (response.data && response.data.length > 0) {
+          guides.value = response.data
+        }
+      } catch (error) {
+        console.error('Error fetching guides:', error)
+        ElMessage.error('获取攻略数据失败')
+      } finally {
+        loading.value = false
       }
-    ])
+    }
+
+    onMounted(() => {
+      fetchGuides()
+    })
 
     const filteredGuides = computed(() => {
       let result = guides.value
@@ -206,7 +129,8 @@ export default {
     })
 
     const filterGuides = () => {
-      // 过滤逻辑已在computed中实现
+      // 重新从API获取数据
+      fetchGuides()
     }
 
     const getCategoryType = (category) => {
@@ -219,13 +143,36 @@ export default {
       return typeMap[category] || 'info'
     }
 
-    const likeGuide = (guide) => {
-      guide.likes++
-      ElMessage.success('点赞成功！')
+    // 从 localStorage 加载收藏的攻略
+    const collectedGuides = ref(new Set(JSON.parse(localStorage.getItem('collectedGuides') || '[]')))
+
+    const likeGuide = async (guide) => {
+      try {
+        await axios.post(`/destination/guides/${guide.id}/like/`)
+        guide.likes++
+        ElMessage.success('点赞成功！')
+      } catch (error) {
+        console.error('Error liking guide:', error)
+        ElMessage.error('点赞失败，请稍后重试')
+      }
     }
 
-    const collectGuide = () => {
-      ElMessage.success('收藏成功！')
+    const collectGuide = (guide) => {
+      if (!collectedGuides.value.has(guide.id)) {
+        // 创建新的 Set 以触发响应式更新
+        collectedGuides.value = new Set([...collectedGuides.value, guide.id])
+        // 保存到 localStorage
+        localStorage.setItem('collectedGuides', JSON.stringify([...collectedGuides.value]))
+        ElMessage.success('收藏成功！')
+      } else {
+        // 创建新的 Set 以触发响应式更新
+        const newSet = new Set(collectedGuides.value)
+        newSet.delete(guide.id)
+        collectedGuides.value = newSet
+        // 保存到 localStorage
+        localStorage.setItem('collectedGuides', JSON.stringify([...collectedGuides.value]))
+        ElMessage.success('收藏取消成功')
+      }
     }
 
     return {
@@ -236,7 +183,9 @@ export default {
       filterGuides,
       getCategoryType,
       likeGuide,
-      collectGuide
+      collectGuide,
+      collectedGuides,
+      loading
     }
   }
 }

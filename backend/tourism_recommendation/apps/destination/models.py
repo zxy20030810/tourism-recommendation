@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Destination(models.Model):
     """旅游目的地模型"""
     name = models.CharField(max_length=100, verbose_name='目的地名称')
@@ -43,3 +44,29 @@ class DestinationFeature(models.Model):
     class Meta:
         verbose_name = '目的地特征'
         verbose_name_plural = '目的地特征'
+
+
+class TravelGuide(models.Model):
+    """旅游攻略模型"""
+    title = models.CharField(max_length=200, verbose_name='攻略标题')
+    category = models.CharField(max_length=50, choices=[
+        ('出行准备', '出行准备'),
+        ('行程规划', '行程规划'),
+        ('省钱攻略', '省钱攻略'),
+        ('注意事项', '注意事项')
+    ], verbose_name='攻略分类')
+    author = models.CharField(max_length=100, verbose_name='作者')
+    content = models.TextField(verbose_name='攻略内容')
+    summary = models.TextField(verbose_name='摘要')
+    views = models.IntegerField(default=0, verbose_name='浏览量')
+    likes = models.IntegerField(default=0, verbose_name='点赞数')
+    tags = models.JSONField(verbose_name='标签')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    
+    class Meta:
+        verbose_name = '旅游攻略'
+        verbose_name_plural = '旅游攻略'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.title

@@ -44,7 +44,7 @@
             分享
           </el-button>
           <el-button 
-            :type="isFavorite ? 'warning' : 'primary'" 
+            :type="isFavorite ? 'primary' : 'info'" 
             @click="toggleFavorite"
             :icon="isFavorite ? 'StarFilled' : 'Star'"
             circle
@@ -274,18 +274,19 @@ export default {
     toggleFavorite() {
       let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
       
-      if (this.isFavorite) {
-        // 取消收藏
-        favorites = favorites.filter(id => id !== this.destinationId)
-        this.$message.success('已取消收藏')
-      } else {
+      if (!this.isFavorite) {
         // 添加收藏
         favorites.push(this.destinationId)
         this.$message.success('收藏成功')
+        this.isFavorite = true
+      } else {
+        // 取消收藏
+        favorites = favorites.filter(id => id !== this.destinationId)
+        this.$message.success('收藏取消成功')
+        this.isFavorite = false
       }
       
       localStorage.setItem('favorites', JSON.stringify(favorites))
-      this.isFavorite = !this.isFavorite
     },
     
     // 分享到微信
