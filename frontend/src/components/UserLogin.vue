@@ -51,8 +51,8 @@ export default {
       console.log('登录请求数据:', this.loginForm)
       console.log('请求URL:', '/user/login/')
       
-      // 使用相对路径，baseURL已经在main.js中配置为'/api'
-      axios.post('/user/login/', this.loginForm)
+      // 明确使用完整路径
+      axios.post('/api/user/login/', this.loginForm)
         .then(response => {
           console.log('登录响应:', response)
           if (response.data.user_id) {

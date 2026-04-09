@@ -266,7 +266,7 @@ export default {
     const fetchUserInfo = async () => {
       loading.value = true
       try {
-        const response = await axios.get(`/user/info/${props.userId}/`)
+        const response = await axios.get(`/api/user/info/${props.userId}/`)
         if (response.data) {
           userInfo.value = response.data
         }
@@ -298,7 +298,7 @@ export default {
 
       saving.value = true
       try {
-        const response = await axios.put(`/user/preference/${props.userId}/`, {
+        const response = await axios.put(`/api/user/preference/${props.userId}/`, {
           username: editForm.value.username,
           email: editForm.value.email,
           gender: editForm.value.gender,

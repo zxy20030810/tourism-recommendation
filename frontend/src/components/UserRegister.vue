@@ -100,7 +100,7 @@ export default {
         if (valid) {
           try {
             console.log('发送注册请求:', this.registerForm)
-            const response = await axios.post('/user/register/', this.registerForm)
+            const response = await axios.post('/api/user/register/', this.registerForm)
             console.log('注册响应:', response)
             
             // 简化成功判断逻辑

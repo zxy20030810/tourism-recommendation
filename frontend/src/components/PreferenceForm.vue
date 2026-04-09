@@ -86,7 +86,7 @@ export default {
   },
   methods: {
     loadUserPreference() {
-      axios.get(`/user/info/${this.userId}/`)
+      axios.get(`/api/user/info/${this.userId}/`)
         .then(response => {
           const userInfo = response.data
           this.preferenceForm = {
@@ -104,7 +104,7 @@ export default {
       this.$refs.preferenceFormRef.validate(async (valid) => {
         if (valid) {
           try {
-            const response = await axios.put(`/user/preference/${this.userId}/`, this.preferenceForm)
+            const response = await axios.put(`/api/user/preference/${this.userId}/`, this.preferenceForm)
             if (response.data && response.data.message === '偏好更新成功') {
               this.$message.success('偏好保存成功')
               this.$router.push(`/recommendations/${this.userId}`)

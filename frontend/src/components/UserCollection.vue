@@ -92,7 +92,7 @@ export default {
     // 获取景点数据
     const fetchDestinations = async () => {
       try {
-        const response = await axios.get('/destination/list/')
+        const response = await axios.get('/api/destination/list/')
         let destData = response.data
         if (destData && destData.value && Array.isArray(destData.value)) {
           destData = destData.value
@@ -118,7 +118,7 @@ export default {
     // 获取攻略数据
     const fetchGuides = async () => {
       try {
-        const response = await axios.get('/destination/guides/')
+        const response = await axios.get('/api/destination/guides/')
         if (response.data && response.data.length > 0) {
           guides.value = response.data.map(item => ({
             id: item.id,

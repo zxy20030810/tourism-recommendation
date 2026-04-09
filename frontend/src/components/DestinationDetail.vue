@@ -220,7 +220,7 @@ export default {
     async getDestinationDetail() {
       this.loading = true
       try {
-        const response = await axios.get(`/destination/detail/${this.destinationId}/`)
+        const response = await axios.get(`/api/destination/detail/${this.destinationId}/`)
         console.log('目的地详情:', response.data)
         this.destination = response.data
         // 获取图片
@@ -238,7 +238,7 @@ export default {
       
       this.imageLoading = true
       try {
-        const response = await axios.get('/destination/images/', {
+        const response = await axios.get('/api/destination/images/', {
           params: { keyword: this.destination.name }
         })
         

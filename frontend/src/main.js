@@ -8,7 +8,6 @@ import axios from 'axios'
 const app = createApp(App)
 
 // 配置axios
-axios.defaults.baseURL = '/api'
 axios.defaults.timeout = 10000
 
 app.config.globalProperties.$axios = axios

@@ -88,7 +88,7 @@ export default {
     const fetchGuides = async () => {
       loading.value = true
       try {
-        const response = await axios.get('/destination/guides/', {
+        const response = await axios.get('/api/destination/guides/', {
           params: {
             category: activeTab.value,
             keyword: searchKeyword.value
@@ -148,7 +148,7 @@ export default {
 
     const likeGuide = async (guide) => {
       try {
-        await axios.post(`/destination/guides/${guide.id}/like/`)
+        await axios.post(`/api/destination/guides/${guide.id}/like/`)
         guide.likes++
         ElMessage.success('点赞成功！')
       } catch (error) {

@@ -343,7 +343,7 @@ export default {
         
         let userPreference = null
         try {
-          const prefResponse = await axios.get(`/user/preference/${this.userId}/`)
+          const prefResponse = await axios.get(`/api/user/preference/${this.userId}/`)
           if (prefResponse.data) {
             userPreference = prefResponse.data
           }
@@ -450,7 +450,7 @@ export default {
         }
         
         try {
-          const destResponse = await axios.get('/destination/list/')
+          const destResponse = await axios.get('/api/destination/list/')
           let destData = destResponse.data
           if (destData && destData.value && Array.isArray(destData.value)) {
             destData = destData.value
@@ -506,15 +506,16 @@ export default {
                 }
               }
               
-              let baseScore = 0.50 + Math.random() * 0.08
-              if (rec._cityDistance === 0) baseScore += 0.42
-              else if (rec._cityDistance <= 300) baseScore += 0.30
-              else if (rec._cityDistance <= 800) baseScore += 0.20
-              else if (rec._sameProvince) baseScore += 0.12
-              else if (rec._cityDistance <= 1500) baseScore += 0.05
+              let baseScore = 0.30 + Math.random() * 0.05
+              if (rec._cityDistance === 0) baseScore += 0.65
+              else if (rec._cityDistance <= 200) baseScore += 0.50
+              else if (rec._cityDistance <= 500) baseScore += 0.40
+              else if (rec._cityDistance <= 1000) baseScore += 0.25
+              else if (rec._sameProvince) baseScore += 0.15
+              else if (rec._cityDistance <= 1500) baseScore += 0.08
               
-              if (rec._categoryMatch) baseScore += 0.06
-              if (rec._priceMatch) baseScore += 0.04
+              if (rec._categoryMatch) baseScore += 0.03
+              if (rec._priceMatch) baseScore += 0.02
               
               rec.score = Math.min(baseScore, 0.99)
             })
@@ -527,10 +528,10 @@ export default {
             const otherRecs = recommendations.filter(r => r._cityDistance !== 0)
             
             cityMatches.forEach((rec, idx) => {
-              rec.score = parseFloat((0.98 - idx * 0.015 + Math.random() * 0.005).toFixed(3))
+              rec.score = parseFloat((0.99 - idx * 0.008 + Math.random() * 0.003).toFixed(3))
             })
             otherRecs.slice(0, topN - cityMatches.length).forEach((rec, idx) => {
-              rec.score = parseFloat((0.92 - idx * 0.03 + Math.random() * 0.008).toFixed(3))
+              rec.score = parseFloat((0.85 - idx * 0.04 + Math.random() * 0.005).toFixed(3))
             })
             
             recommendations = [...cityMatches, ...otherRecs].slice(0, topN)
@@ -541,7 +542,7 @@ export default {
         
         // 如果数据库没有数据，则调用推荐API
         if (recommendations.length === 0) {
-          let url = '/recommendation/user/' + (this.userId || 'guest') + '/'
+          let url = '/api/recommendation/user/' + (this.userId || 'guest') + '/'
           const response = await axios.get(url, {
             params: {
               lat: this.userLat,

@@ -79,7 +79,7 @@ export default {
     const fetchDestinations = async () => {
       loading.value = true
       try {
-        const response = await axios.get('/destination/list/')
+        const response = await axios.get('/api/destination/list/')
         if (response.data && Array.isArray(response.data)) {
           sceneryList.value = response.data.map((dest, index) => ({
             id: dest.id,
